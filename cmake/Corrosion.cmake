@@ -158,6 +158,11 @@ function(_add_cargo_build)
         set(build_env_variable_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:${target_name},CORROSION_ENVIRONMENT_VARIABLES>>")
     endif()
 
+    set(features_args)
+    foreach(feature ${COR_FEATURES})
+        list(APPEND features_args --features ${feature})
+    endforeach()
+
     add_custom_target(
         cargo-build_${target_name}
         ALL
@@ -179,6 +184,7 @@ function(_add_cargo_build)
                 --manifest-path "${path_to_toml}"
                 build-crate
                     $<$<NOT:$<OR:$<CONFIG:Debug>,$<CONFIG:>>>:--release>
+                    ${features_args}
                     --target ${_CORROSION_RUST_CARGO_TARGET}
                     --package ${package_name}
         # Copy crate artifacts to the binary dir
@@ -210,7 +216,7 @@ endfunction(_add_cargo_build)
 function(corrosion_import_crate)
     set(OPTIONS)
     set(ONE_VALUE_KEYWORDS MANIFEST_PATH)
-    set(MULTI_VALUE_KEYWORDS CRATES)
+    set(MULTI_VALUE_KEYWORDS CRATES FEATURES)
     cmake_parse_arguments(COR "${OPTIONS}" "${ONE_VALUE_KEYWORDS}" "${MULTI_VALUE_KEYWORDS}" ${ARGN})
 
     if (NOT DEFINED COR_MANIFEST_PATH)
